@@ -4190,6 +4190,14 @@ class Oszicar:
             [{"dE": -526.36, "E0": -526.36024, "mag": 0.0, "F": -526.36024}, ...]
             This is the typical output from VASP at the end of each ionic step. The stored dict might be different
             depending on the type of VASP run.
+        penalty_energies (list[list]): List of penalty energies in the case of constrained non-colllinear
+            calculations.
+            penalty_energies[index_ionic][index_electronic] refers to the penalty energy at the electronic step
+            index_electronic in each ionic step index_ionic.
+        magnetic_moments (list[list[list[list]]]): List of magnetic moments at each electronic step.
+            magnetic_moments[index_ionic][index_electronic][index_ion][index_spin_direction] refers to the magnetic
+            moment value in a specific direction at the ion index_ion in the electronic step index_electronic in each
+            ionic step index_ionic.
     """
 
     def __init__(self, filename: PathLike) -> None:
@@ -4207,13 +4215,39 @@ class Oszicar:
 
         electronic_steps = []
         ionic_steps = []
+        penalty_energies: list[list] = [[]]
+        magnetic_moments: list[list] = [[]]
         ionic_general_pattern = re.compile(r"(\w+)=\s*(\S+)")
         electronic_pattern = re.compile(r"\s*\w+\s*:(.*)")
-
+        penalty_energy_pattern = re.compile(r"E_p\s*=\s*(\S+)")
+        magmom_pattern = re.compile(r"\s*(\d+)\s+[\d.-]+\s+[\d.-]+\s+[\d.-]+\s+([\d.-]+)\s+([\d.-]+)\s+([\d.-]+)")
+        ionic_step_finished_m = False
+        ionic_step_finished_p = False
         header: list = []
+        current_moments = None
         with zopen(filename, mode="rt") as fid:
             for line in fid:
-                if match := electronic_pattern.match(line.strip()):
+                if ionic_step_finished_p:
+                    penalty_energies.append([])
+                    ionic_step_finished_p = False
+                if penalty_energy_match := penalty_energy_pattern.search(line):
+                    penalty_energies[-1].append(float(penalty_energy_match.group(1)))
+                elif magmom_match := magmom_pattern.match(line):
+                    ion_idx = int(magmom_match.group(1))
+                    if ion_idx == 1:
+                        if current_moments:
+                            # append moments from previous electronic step
+                            magnetic_moments[-1].append(current_moments)
+                            # start new list for current ionic step
+                            if ionic_step_finished_m:
+                                magnetic_moments.append([])
+                                ionic_step_finished_m = False
+                        # start new list for current electronic step
+                        current_moments = []
+                    magmom = [float(magmom_match.group(i)) for i in range(2, 5)]
+                    current_moments.append(magmom)
+
+                elif match := electronic_pattern.match(line.strip()):
                     tokens = match[1].split()
                     data = {header[idx]: smart_convert(header[idx], tokens[idx]) for idx in range(len(tokens))}
                     if tokens[0] == "1":
@@ -4225,10 +4259,25 @@ class Oszicar:
                 elif line.strip() != "":
                     # remove space first and apply field agnostic extraction
                     matches = re.findall(ionic_general_pattern, re.sub(r"d E ", "dE", line))
-                    ionic_steps.append({key: float(value) for key, value in matches})
+                    if ionic_step := {key: float(value) for key, value in matches}:
+                        ionic_steps.append(ionic_step)
+                        ionic_step_finished_p = True
+                        ionic_step_finished_m = True
 
+        if current_moments:
+            magnetic_moments[-1].append(current_moments)
+        # The last magnetic moment is sometimes not complete
+        if current_moments and len(current_moments) != len(magnetic_moments[0][0]):
+            magnetic_moments[-1].pop(-1)
+        if len(electronic_steps) == len(ionic_steps) + 1:
+            electronic_steps.pop(-1)
+        if len(magnetic_moments) == len(ionic_steps) + 1:
+            magnetic_moments.pop(-1)
+            penalty_energies.pop(-1)
         self.electronic_steps = electronic_steps
         self.ionic_steps = ionic_steps
+        self.penalty_energies = penalty_energies
+        self.magnetic_moments = magnetic_moments
 
     @property
     def all_energies(self) -> tuple[tuple[float | str, ...], ...]:
@@ -4254,6 +4303,8 @@ class Oszicar:
         return {
             "electronic_steps": self.electronic_steps,
             "ionic_steps": self.ionic_steps,
+            "penalty_energies": self.penalty_energies,
+            "magnetic_moments": self.magnetic_moments,
         }
 
 

@@ -1426,9 +1426,56 @@ class TestOszicar(PymatgenTest):
     def test_init(self):
         fpath = f"{VASP_OUT_DIR}/OSZICAR"
         oszicar = Oszicar(fpath)
+        # print(oszicar.electronic_steps, oszicar.ionic_steps, oszicar.penalty_energies, oszicar.magnetic_moments)
         assert len(oszicar.electronic_steps) == len(oszicar.ionic_steps)
         assert len(oszicar.all_energies) == 60
         assert oszicar.final_energy == approx(-526.63928)
+        assert set(oszicar.ionic_steps[-1]) == set({"F", "E0", "dE", "mag"})
+
+    def test_init_ncl_static(self):
+        fpath = f"{VASP_OUT_DIR}/OSZICAR_ncl_static"
+        oszicar = Oszicar(fpath)
+        print(
+            len(oszicar.all_energies),
+            oszicar.final_energy,
+            len(oszicar.magnetic_moments),
+            len(oszicar.ionic_steps),
+            len(oszicar.penalty_energies),
+            len(oszicar.penalty_energies[0]),
+            len(oszicar.magnetic_moments[0]),
+        )
+        assert len(oszicar.electronic_steps) == len(oszicar.ionic_steps)
+        assert len(oszicar.all_energies) == 1
+        assert len(oszicar.electronic_steps[0]) == 26
+        assert oszicar.final_energy == approx(12.393099)
+        assert len(oszicar.magnetic_moments) == len(oszicar.ionic_steps) == len(oszicar.penalty_energies)
+        assert len(oszicar.penalty_energies[0]) == len(oszicar.magnetic_moments[0])
+        assert all(len(magmom) == 2 for magmom in oszicar.magnetic_moments[0])
+        assert set(oszicar.ionic_steps[-1]) == set({"F", "E0", "dE", "mag"})
+
+    def test_init_ncl_relax(self):
+        fpath = f"{VASP_OUT_DIR}/OSZICAR_ncl_relax"
+        oszicar = Oszicar(fpath)
+        print(
+            len(oszicar.all_energies),
+            oszicar.final_energy,
+            len(oszicar.magnetic_moments),
+            len(oszicar.ionic_steps),
+            len(oszicar.penalty_energies),
+            len(oszicar.penalty_energies[0]),
+            len(oszicar.magnetic_moments[0]),
+            len(oszicar.penalty_energies[-1]),
+            len(oszicar.magnetic_moments[-1]),
+        )
+        assert len(oszicar.electronic_steps) == len(oszicar.ionic_steps) == 2
+        assert len(oszicar.all_energies) == 2
+        assert len(oszicar.electronic_steps[0]) == 4
+        assert oszicar.final_energy == approx(12.393085)
+        assert len(oszicar.magnetic_moments) == len(oszicar.ionic_steps) == len(oszicar.penalty_energies)
+        assert len(oszicar.penalty_energies[0]) == len(oszicar.magnetic_moments[0])
+        assert len(oszicar.penalty_energies[-1]) == len(oszicar.magnetic_moments[-1])
+        assert all(len(magmom) == 2 for magmom in oszicar.magnetic_moments[0])
+        assert all(len(magmom) == 2 for magmom in oszicar.magnetic_moments[1])
         assert set(oszicar.ionic_steps[-1]) == set({"F", "E0", "dE", "mag"})
 
     def test_static(self):
