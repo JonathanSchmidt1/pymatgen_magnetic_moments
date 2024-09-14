@@ -4269,11 +4269,13 @@ class Oszicar:
         # The last magnetic moment is sometimes not complete
         if current_moments and len(current_moments) != len(magnetic_moments[0][0]):
             magnetic_moments[-1].pop(-1)
-        if len(electronic_steps) == len(ionic_steps) + 1:
-            electronic_steps.pop(-1)
-        if len(magnetic_moments) == len(ionic_steps) + 1:
-            magnetic_moments.pop(-1)
+        if len(penalty_energies) == len(magnetic_moments) + 1:
             penalty_energies.pop(-1)
+        #if len(electronic_steps) == len(ionic_steps) + 1:
+        #    electronic_steps.pop(-1)
+        #if len(magnetic_moments) == len(ionic_steps) + 1:
+        #    magnetic_moments.pop(-1)
+        #    penalty_energies.pop(-1)
         self.electronic_steps = electronic_steps
         self.ionic_steps = ionic_steps
         self.penalty_energies = penalty_energies
