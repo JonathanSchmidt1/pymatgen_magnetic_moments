@@ -2582,7 +2582,7 @@ class Outcar:
 
     def read_piezo_tensor(self) -> None:
         """Parse the piezo tensor data."""
-        header_pattern = r"PIEZOELECTRIC TENSOR  for field in x, y, z\s+\(C/m\^2\)\s+([X-Z][X-Z]\s+)+\-+"
+        header_pattern = r"PIEZOELECTRIC TENSOR.*\(C/m\^2\)\s+([X-Z][X-Z]\s+)+\-+"
         row_pattern = r"[x-z]\s+" + r"\s+".join([r"(\-*[\.\d]+)"] * 6)
         footer_pattern = r"BORN EFFECTIVE"
         pt_table = self.read_table_pattern(header_pattern, row_pattern, footer_pattern, postprocess=float)
