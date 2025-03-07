@@ -32,6 +32,7 @@ elif len(PMG_MAPI_KEY) > 20:
     MP_URL = "https://api.materialsproject.org"
 else:
     MP_URL = "https://materialsproject.org"
+
 try:
     skip_mprester_tests = requests.get(MP_URL, timeout=60).status_code != 200
 
@@ -39,10 +40,13 @@ except (ModuleNotFoundError, ImportError, requests.exceptions.ConnectionError):
     # Skip all MPRester tests if some downstream problem on the website, mp-api or whatever.
     skip_mprester_tests = True
 
+if skip_mprester_tests:
+    pytest.skip("MP API is down", allow_module_level=True)
+
 
 @pytest.mark.skipif(
-    skip_mprester_tests or (not 10 < len(PMG_MAPI_KEY) <= 20),
-    reason="Legacy PMG_MAPI_KEY environment variable not set or MP API is down.",
+    not 10 < len(PMG_MAPI_KEY) <= 20,
+    reason="Legacy PMG_MAPI_KEY environment variable not set.",
 )
 class TestMPResterOld(PymatgenTest):
     def setUp(self):
@@ -85,7 +89,13 @@ class TestMPResterOld(PymatgenTest):
         expected_vals = vals.json()
 
         for prop in props:
-            if prop not in ["hubbards", "unit_cell_formula", "elements", "icsd_ids", "task_ids"]:
+            if prop not in [
+                "hubbards",
+                "unit_cell_formula",
+                "elements",
+                "icsd_ids",
+                "task_ids",
+            ]:
                 val = self.rester.get_data(mp_id, prop=prop)[0][prop]
                 if prop in ["energy", "energy_per_atom"]:
                     prop = f"final_{prop}"
@@ -301,7 +311,7 @@ class TestMPResterOld(PymatgenTest):
 
     def test_get_exp_entry(self):
         entry = self.rester.get_exp_entry("Fe2O3")
-        assert entry.energy == -825.5
+        assert entry.energy == approx(-825.5)
 
     @pytest.mark.skip("TODO: Need someone to fix this")
     def test_submit_query_delete_snl(self):
@@ -478,7 +488,7 @@ class TestMPResterOld(PymatgenTest):
 
         assert isinstance(db_version, str)
         yaml = YAML()
-        with open(MP_LOG_FILE) as file:
+        with open(MP_LOG_FILE, encoding="utf-8") as file:
             dct = yaml.load(file)
 
         assert dct["MAPI_DB_VERSION"]["LAST_ACCESSED"] == db_version
@@ -515,8 +525,8 @@ class TestMPResterOld(PymatgenTest):
 
 
 @pytest.mark.skipif(
-    skip_mprester_tests or (not len(PMG_MAPI_KEY) > 20),
-    reason="PMG_MAPI_KEY environment variable not set or MP API is down.",
+    not len(PMG_MAPI_KEY) > 20,
+    reason="PMG_MAPI_KEY environment variable not set.",
 )
 class TestMPResterNewBasic(PymatgenTest):
     def setUp(self):
@@ -763,7 +773,7 @@ class TestMPResterNewBasic(PymatgenTest):
     @pytest.mark.skip("TODO: need someone to fix this")
     def test_get_exp_entry(self):
         entry = self.rester.get_exp_entry("Fe2O3")
-        assert entry.energy == -825.5
+        assert entry.energy == approx(-825.5)
 
     @pytest.mark.skip("TODO: need someone to fix this")
     def test_get_stability(self):
@@ -898,7 +908,7 @@ class TestMPResterNewBasic(PymatgenTest):
             pytest.skip("mp_api.client.MPRester cannot be imported for this test.")
         mpr_mp_api = MpApi(PMG_MAPI_KEY)
         # Test summary
-        mp_data = mpr_mp_api.summary.search(formula="Al2O3")
+        mp_data = mpr_mp_api.materials.search(formula="Al2O3")
         pmg_data = self.rester.get_summary({"formula": "Al2O3"})
         assert len(mp_data) == len(pmg_data)
 

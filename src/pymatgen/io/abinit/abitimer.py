@@ -114,7 +114,7 @@ class AbinitTimerParser(collections.abc.Iterable):
         read_ok = []
         for filename in filenames:
             try:
-                file = open(filename)  # noqa: SIM115
+                file = open(filename, encoding="utf-8")  # noqa: SIM115
             except OSError:
                 logger.warning(f"Cannot open file {filename}")
                 continue
@@ -306,7 +306,14 @@ class AbinitTimerParser(collections.abc.Iterable):
 
     def summarize(self, **kwargs):
         """Return pandas DataFrame with the most important results stored in the timers."""
-        col_names = ["fname", "wall_time", "cpu_time", "mpi_nprocs", "omp_nthreads", "mpi_rank"]
+        col_names = [
+            "fname",
+            "wall_time",
+            "cpu_time",
+            "mpi_nprocs",
+            "omp_nthreads",
+            "mpi_rank",
+        ]
 
         frame = pd.DataFrame(columns=col_names)
         for timer in self.timers():
@@ -651,7 +658,12 @@ class AbinitTimer:
         self.fname = info["fname"].strip()
 
     def __repr__(self):
-        file, wall_time, mpi_nprocs, omp_nthreads = self.fname, self.wall_time, self.mpi_nprocs, self.omp_nthreads
+        file, wall_time, mpi_nprocs, omp_nthreads = (
+            self.fname,
+            self.wall_time,
+            self.mpi_nprocs,
+            self.omp_nthreads,
+        )
         return f"{type(self).__name__}({file=}, {wall_time=:.3}, {mpi_nprocs=}, {omp_nthreads=})"
 
     @property
@@ -672,7 +684,7 @@ class AbinitTimer:
         is_str = isinstance(fileobj, str)
 
         if is_str:
-            fileobj = open(fileobj, mode="w")  # noqa: SIM115
+            fileobj = open(fileobj, mode="w", encoding="utf-8")  # noqa: SIM115
 
         for idx, section in enumerate(self.sections):
             fileobj.write(section.to_csvline(with_header=(idx == 0)))

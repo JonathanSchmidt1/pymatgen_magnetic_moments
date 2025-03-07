@@ -63,7 +63,7 @@ class Nwchem2Fiesta(MSONable):
         init_folder = os.getcwd()
         os.chdir(self.folder)
 
-        with zopen(self.log_file, mode="w") as fout:
+        with zopen(self.log_file, mode="wt", encoding="utf-8") as fout:
             subprocess.call(
                 [
                     self._NWCHEM2FIESTA_cmd,
@@ -105,7 +105,12 @@ class FiestaRun(MSONable):
         otherwise it breaks.
     """
 
-    def __init__(self, folder: str | None = None, grid: Tuple3Ints = (2, 2, 2), log_file: str = "log") -> None:
+    def __init__(
+        self,
+        folder: str | None = None,
+        grid: Tuple3Ints = (2, 2, 2),
+        log_file: str = "log",
+    ) -> None:
         """
         Args:
             folder: Folder to look for runs.
@@ -133,7 +138,7 @@ class FiestaRun(MSONable):
         if self.folder != init_folder:
             os.chdir(self.folder)
 
-        with zopen(self.log_file, mode="w") as fout:
+        with zopen(self.log_file, mode="wt", encoding="utf-8") as fout:
             subprocess.call(
                 [
                     "mpirun",
@@ -156,7 +161,7 @@ class FiestaRun(MSONable):
         if self.folder != init_folder:
             os.chdir(self.folder)
 
-        with zopen(self.log_file, mode="w") as fout:
+        with zopen(self.log_file, mode="wt", encoding="utf-8") as fout:
             subprocess.call(
                 [
                     "mpirun",
@@ -209,7 +214,7 @@ class BasisSetReader:
         """
         self.filename = filename
 
-        with zopen(filename) as file:
+        with zopen(filename, mode="rt", encoding="utf-8") as file:
             basis_set = file.read()
 
         self.data = self._parse_file(basis_set)
@@ -323,7 +328,11 @@ class FiestaInput(MSONable):
             "resMethod": "V",
             "scf_cohsex_wf": "0",
         }
-        self.GW_options = gw_options or {"nc_corr": "10", "nit_gw": "3", "nv_corr": "10"}
+        self.GW_options = gw_options or {
+            "nc_corr": "10",
+            "nit_gw": "3",
+            "nv_corr": "10",
+        }
         self.bse_tddft_options = bse_tddft_options or {
             "do_bse": "1",
             "do_tddft": "0",
@@ -382,25 +391,18 @@ class FiestaInput(MSONable):
         self.bse_tddft_options.update(npsi_bse=n_excitations, nit_bse=nit_bse)
 
     def dump_bse_data_in_gw_run(self, BSE_dump=True):
-        """
-        Args:
-            BSE_dump: bool.
+        """Set the "do_bse" variable to 1 or 0 in cell.in.
 
-        Returns:
-            set the "do_bse" variable to one in cell.in
+        Args:
+            BSE_dump (bool): Defaults to True.
         """
-        if BSE_dump:
-            self.bse_tddft_options.update(do_bse=1, do_tddft=0)
-        else:
-            self.bse_tddft_options.update(do_bse=0, do_tddft=0)
+        self.bse_tddft_options.update(do_bse=int(BSE_dump), do_tddft=0)
 
     def dump_tddft_data_in_gw_run(self, tddft_dump: bool = True):
-        """
-        Args:
-            TDDFT_dump: bool.
+        """Set the do_tddft variable to 1 or 0 in cell.in.
 
-        Returns:
-            set the do_tddft variable to one in cell.in
+        Args:
+            tddft_dump (bool): Defaults to True.
         """
         self.bse_tddft_options.update(do_bse="0", do_tddft="1" if tddft_dump else "0")
 
@@ -531,7 +533,7 @@ $geometry
         Args:
             filename: Filename.
         """
-        with zopen(filename, mode="w") as file:
+        with zopen(filename, mode="wt", encoding="utf-8") as file:
             file.write(str(self))
 
     def as_dict(self):
@@ -710,7 +712,7 @@ $geometry
         Returns:
             FiestaInput object
         """
-        with zopen(filename) as file:
+        with zopen(filename, mode="rt", encoding="utf-8") as file:
             return cls.from_str(file.read())
 
 
@@ -728,7 +730,7 @@ class FiestaOutput:
         """
         self.filename = filename
 
-        with zopen(filename) as file:
+        with zopen(filename, mode="rt", encoding="utf-8") as file:
             data = file.read()
 
         chunks = re.split(r"GW Driver iteration", data)
@@ -819,7 +821,7 @@ class BSEOutput:
         """
         self.filename = filename
 
-        with zopen(filename) as file:
+        with zopen(filename, mode="rt", encoding="utf-8") as file:
             log_bse = file.read()
 
         # self.job_info = self._parse_preamble(preamble)

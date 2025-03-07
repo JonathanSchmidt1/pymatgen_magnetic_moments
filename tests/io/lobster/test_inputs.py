@@ -44,7 +44,7 @@ class TestLobsterin(PymatgenTest):
         assert self.Lobsterin == self.Lobsterin2
 
     def test_duplicates_from_file(self):
-        with open(f"{TEST_DIR}/lobsterin.1") as file:
+        with open(f"{TEST_DIR}/lobsterin.1", encoding="utf-8") as file:
             original_file = file.readlines()
 
         # String and float keywords does not allow duplicates
@@ -112,12 +112,21 @@ class TestLobsterin(PymatgenTest):
         assert lobsterin["gaussiansmearingwidth"] == approx(0.1)
         assert lobsterin["basisfunctions"][0] == "Fe 3d 4p 4s"
         assert lobsterin["basisfunctions"][1] == "Co 3d 4p 4s"
-        assert {*lobsterin} >= {"skipdos", "skipcohp", "skipcoop", "skippopulationanalysis", "skipgrosspopulation"}
+        assert {*lobsterin} >= {
+            "skipdos",
+            "skipcohp",
+            "skipcoop",
+            "skippopulationanalysis",
+            "skipgrosspopulation",
+        }
         with pytest.raises(KeyError, match="There are duplicates for the keywords!"):
             lobsterin2 = Lobsterin({"cohpstartenergy": -15.0, "cohpstartEnergy": -20.0})
         lobsterin2 = Lobsterin({"cohpstartenergy": -15.0})
         # can only calculate nbands if basis functions are provided
-        with pytest.raises(ValueError, match="No basis functions are provided. The program cannot calculate nbands."):
+        with pytest.raises(
+            ValueError,
+            match="No basis functions are provided. The program cannot calculate nbands.",
+        ):
             lobsterin2._get_nbands(structure=Structure.from_file(f"{VASP_IN_DIR}/POSCAR_Fe3O4"))
 
     def test_standard_settings(self):
@@ -229,7 +238,10 @@ class TestLobsterin(PymatgenTest):
         assert "gaussiansmearingwidth" not in lobsterin_new
 
         # fatband and ISMEAR=-5 does not work together
-        with pytest.raises(ValueError, match="ISMEAR has to be 0 for a fatband calculation with Lobster"):
+        with pytest.raises(
+            ValueError,
+            match="ISMEAR has to be 0 for a fatband calculation with Lobster",
+        ):
             lobsterin_new = Lobsterin.standard_calculations_from_vasp_files(
                 f"{VASP_IN_DIR}/POSCAR_Fe3O4",
                 f"{VASP_IN_DIR}/INCAR.lobster2",
@@ -246,8 +258,8 @@ class TestLobsterin(PymatgenTest):
             f"{VASP_OUT_DIR}/vasprun.C2.xml.gz",
             option="standard_with_energy_range_from_vasprun",
         )
-        assert lobsterin_comp["COHPstartEnergy"] == -28.3679
-        assert lobsterin_comp["COHPendEnergy"] == 32.8968
+        assert lobsterin_comp["COHPstartEnergy"] == approx(-28.3679)
+        assert lobsterin_comp["COHPendEnergy"] == approx(32.8968)
         assert lobsterin_comp["COHPSteps"] == 301
 
     def test_diff(self):
@@ -287,11 +299,11 @@ class TestLobsterin(PymatgenTest):
     def test_dict_functionality(self):
         for key in ("COHPstartEnergy", "COHPstartEnergy", "COhPstartenergy"):
             start_energy = self.Lobsterin.get(key)
-            assert start_energy == -15.0, f"{start_energy=}, {key=}"
+            assert start_energy == approx(-15.0), f"{start_energy=}, {key=}"
 
         lobsterin_copy = self.Lobsterin.copy()
         lobsterin_copy.update({"cohpstarteNergy": -10.00})
-        assert lobsterin_copy["cohpstartenergy"] == -10.0
+        assert lobsterin_copy["cohpstartenergy"] == approx(-10.0)
         lobsterin_copy.pop("cohpstarteNergy")
         assert "cohpstartenergy" not in lobsterin_copy
         lobsterin_copy.pop("cohpendenergY")
@@ -355,8 +367,14 @@ class TestLobsterin(PymatgenTest):
 
     def test_get_potcar_symbols(self):
         lobsterin1 = Lobsterin({})
-        assert lobsterin1._get_potcar_symbols(f"{VASP_IN_DIR}/POTCAR_Fe3O4.gz") == ["Fe", "O"]
-        assert lobsterin1._get_potcar_symbols(f"{TEST_DIR}/POTCAR.GaAs") == ["Ga_d", "As"]
+        assert lobsterin1._get_potcar_symbols(f"{VASP_IN_DIR}/POTCAR_Fe3O4.gz") == [
+            "Fe",
+            "O",
+        ]
+        assert lobsterin1._get_potcar_symbols(f"{TEST_DIR}/POTCAR.GaAs") == [
+            "Ga_d",
+            "As",
+        ]
 
     def test_write_lobsterin(self):
         # write lobsterin, read it and compare it
@@ -447,7 +465,12 @@ class TestLobsterin(PymatgenTest):
         assert labels == labels2
 
         # without line mode
-        lobsterin1.write_KPOINTS(POSCAR_input=outfile_path2, KPOINTS_output=outfile_path, line_mode=False, isym=-1)
+        lobsterin1.write_KPOINTS(
+            POSCAR_input=outfile_path2,
+            KPOINTS_output=outfile_path,
+            line_mode=False,
+            isym=-1,
+        )
         kpoint = Kpoints.from_file(outfile_path)
         kpoint2 = Kpoints.from_file(f"{VASP_OUT_DIR}/IBZKPT.lobster")
 
@@ -572,7 +595,12 @@ class TestUtils(PymatgenTest):
         min_basis = ["Li 1s 2s"]
         max_basis = ["Li 1s 2s 2p 3s"]
         combinations_basis = get_all_possible_basis_combinations(min_basis, max_basis)
-        assert combinations_basis == [["Li 1s 2s"], ["Li 1s 2s 2p"], ["Li 1s 2s 3s"], ["Li 1s 2s 2p 3s"]]
+        assert combinations_basis == [
+            ["Li 1s 2s"],
+            ["Li 1s 2s 2p"],
+            ["Li 1s 2s 3s"],
+            ["Li 1s 2s 2p 3s"],
+        ]
 
         min_basis = ["Li 1s 2s", "Na 1s 2s"]
         max_basis = ["Li 1s 2s 2p 3s", "Na 1s 2s 2p 3s"]

@@ -499,7 +499,8 @@ class AimsOutCalcChunk(AimsOutChunk):
             np.sum(magmom) - properties["magmom"]
         ) < 1e-3:
             warnings.warn(
-                "Total magnetic moment and sum of Mulliken spins are not consistent", UserWarning, stacklevel=1
+                "Total magnetic moment and sum of Mulliken spins are not consistent",
+                stacklevel=2,
             )
 
         if lattice is not None:
@@ -519,7 +520,9 @@ class AimsOutCalcChunk(AimsOutChunk):
             properties=properties,
         )
 
-    def _parse_lattice_atom_pos(self) -> tuple[list[str], list[Vector3D], list[Vector3D], Lattice | None]:
+    def _parse_lattice_atom_pos(
+        self,
+    ) -> tuple[list[str], list[Vector3D], list[Vector3D], Lattice | None]:
         """Parse the lattice and atomic positions of the structure.
 
         Returns:
@@ -573,36 +576,48 @@ class AimsOutCalcChunk(AimsOutChunk):
     def species(self) -> list[str]:
         """The list of atomic symbols for all atoms in the structure."""
         if "species" not in self._cache:
-            self._cache["species"], self._cache["coords"], self._cache["velocities"], self._cache["lattice"] = (
-                self._parse_lattice_atom_pos()
-            )
+            (
+                self._cache["species"],
+                self._cache["coords"],
+                self._cache["velocities"],
+                self._cache["lattice"],
+            ) = self._parse_lattice_atom_pos()
         return self._cache["species"]
 
     @property
     def coords(self) -> list[Vector3D]:
         """The cartesian coordinates of the atoms."""
         if "coords" not in self._cache:
-            self._cache["species"], self._cache["coords"], self._cache["velocities"], self._cache["lattice"] = (
-                self._parse_lattice_atom_pos()
-            )
+            (
+                self._cache["species"],
+                self._cache["coords"],
+                self._cache["velocities"],
+                self._cache["lattice"],
+            ) = self._parse_lattice_atom_pos()
         return self._cache["coords"]
 
     @property
     def velocities(self) -> list[Vector3D]:
         """The velocities of the atoms."""
         if "velocities" not in self._cache:
-            self._cache["species"], self._cache["coords"], self._cache["velocities"], self._cache["lattice"] = (
-                self._parse_lattice_atom_pos()
-            )
+            (
+                self._cache["species"],
+                self._cache["coords"],
+                self._cache["velocities"],
+                self._cache["lattice"],
+            ) = self._parse_lattice_atom_pos()
         return self._cache["velocities"]
 
     @property
     def lattice(self) -> Lattice:
         """The Lattice object for the structure."""
         if "lattice" not in self._cache:
-            self._cache["species"], self._cache["coords"], self._cache["velocities"], self._cache["lattice"] = (
-                self._parse_lattice_atom_pos()
-            )
+            (
+                self._cache["species"],
+                self._cache["coords"],
+                self._cache["velocities"],
+                self._cache["lattice"],
+            ) = self._parse_lattice_atom_pos()
         return self._cache["lattice"]
 
     @property
@@ -1052,10 +1067,7 @@ def get_aims_out_chunks(content: str | TextIOWrapper, header_chunk: AimsOutHeade
             # don't end chunk on next Re-initialization
             patterns = [
                 ("Self-consistency cycle not yet converged - restarting mixer to attempt better convergence."),
-                (
-                    "Components of the stress tensor (for mathematical "
-                    "background see comments in numerical_stress.f90)."
-                ),
+                ("Components of the stress tensor (for mathematical background see comments in numerical_stress.f90)."),
                 "Calculation of numerical stress completed",
             ]
             if any(pattern in line for pattern in patterns):
@@ -1121,7 +1133,7 @@ def read_aims_header_info(
             with gzip.open(filename, mode="rt") as file:
                 content = file.read()
         else:
-            with open(filename) as file:
+            with open(filename, encoding="utf-8") as file:
                 content = file.read()
 
     if content is None:
@@ -1180,7 +1192,7 @@ def read_aims_output(
             with gzip.open(path, mode="rt") as file:
                 content = file.read()
         else:
-            with open(path) as file:
+            with open(path, encoding="utf-8") as file:
                 content = file.read()
 
     if content is None:

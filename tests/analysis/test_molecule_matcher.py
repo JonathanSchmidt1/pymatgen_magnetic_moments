@@ -164,12 +164,12 @@ class TestMoleculeMatcher:
     @pytest.mark.skipif(platform.system() == "Windows", reason="Tests for openbabel failing on Win")
     def test_group_molecules(self):
         mol_matcher = MoleculeMatcher(tolerance=0.001)
-        with open(f"{TEST_DIR}/mol_list.txt") as file:
+        with open(f"{TEST_DIR}/mol_list.txt", encoding="utf-8") as file:
             filename_list = [line.strip() for line in file]
         mol_list = [Molecule.from_file(f"{TEST_DIR}/{file}") for file in filename_list]
         mol_groups = mol_matcher.group_molecules(mol_list)
         filename_groups = [[filename_list[mol_list.index(m)] for m in g] for g in mol_groups]
-        with open(f"{TEST_DIR}/grouped_mol_list.txt") as file:
+        with open(f"{TEST_DIR}/grouped_mol_list.txt", encoding="utf-8") as file:
             grouped_text = file.read().strip()
         assert str(filename_groups) == grouped_text
 
@@ -312,7 +312,10 @@ class TestKabschMatcher:
 
         mol_matcher = KabschMatcher(mol1)
 
-        with pytest.raises(ValueError, match="The order of the species aren't matching! Please try using "):
+        with pytest.raises(
+            ValueError,
+            match="The order of the species aren't matching! Please try using ",
+        ):
             mol_matcher.fit(mol2)
 
     def test_mismatched_atom_order(self):
@@ -567,7 +570,8 @@ class TestKabschMatcherSi(TestCase):
     def test_mismatched_atoms(self):
         mol2 = Molecule.from_file(f"{TEST_DIR}/Si2O_cluster.xyz")
         with pytest.raises(
-            ValueError, match="The order of the species aren't matching! Please try using PermInvMatcher"
+            ValueError,
+            match="The order of the species aren't matching! Please try using PermInvMatcher",
         ):
             self.mol_matcher.fit(mol2)
 
@@ -695,7 +699,8 @@ class TestKabschMatcherSi2O(TestCase):
     def test_mismatched_atoms(self):
         mol2 = Molecule.from_file(f"{TEST_DIR}/Si_cluster_rotated.xyz")
         with pytest.raises(
-            ValueError, match="The order of the species aren't matching! Please try using PermInvMatcher"
+            ValueError,
+            match="The order of the species aren't matching! Please try using PermInvMatcher",
         ):
             self.mol_matcher.fit(mol2)
 
@@ -714,7 +719,8 @@ class TestKabschMatcherSi2O(TestCase):
         # to handle arbitrary atom's order
         mol2 = Molecule.from_file(f"{TEST_DIR}/Si2O_cluster_permuted.xyz")
         with pytest.raises(
-            ValueError, match="The order of the species aren't matching! Please try using PermInvMatcher"
+            ValueError,
+            match="The order of the species aren't matching! Please try using PermInvMatcher",
         ):
             self.mol_matcher.fit(mol2)
 

@@ -141,7 +141,7 @@ class Ion(Composition, MSONable, Stringify):
 
         Args:
             iupac_ordering (bool, optional): Whether to order the
-                formula by the iupac "electronegativity" series, defined in
+                formula by the IUPAC "electronegativity" series, defined in
                 Table VI of "Nomenclature of Inorganic Chemistry (IUPAC
                 Recommendations 2005)". This ordering effectively follows
                 the groups and rows of the periodic table, except the
@@ -171,7 +171,7 @@ class Ion(Composition, MSONable, Stringify):
                 nH2O = int(nO) if nH >= 2 * nO else int(nH) // 2
                 comp = self.composition - nH2O * Composition("H2O")
 
-        el_amt_dict = {k: int(round(v)) for k, v in comp.get_el_amt_dict().items()}
+        el_amt_dict = {k: round(v) for k, v in comp.get_el_amt_dict().items()}
         formula, factor = reduce_formula(el_amt_dict, iupac_ordering=iupac_ordering)
 
         # This line checks specifically that the contains an equal amount of O and H. When that is the case,
@@ -233,7 +233,7 @@ class Ion(Composition, MSONable, Stringify):
         elif formula == "HCOO":
             formula = "HCO2"
         # oxalate
-        elif formula == "CO2":
+        elif formula == "CO2" and self.charge == -2:
             formula = "C2O4"
             factor /= 2
         # diatomic gases

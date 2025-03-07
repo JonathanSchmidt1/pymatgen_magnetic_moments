@@ -225,7 +225,7 @@ class VampireCaller:
 
         self.mat_id_dict = mat_id_dict
 
-        with open(mat_file_name, mode="w") as file:
+        with open(mat_file_name, mode="w", encoding="utf-8") as file:
             file.write(mat_file)
 
     def _create_input(self):
@@ -296,7 +296,7 @@ class VampireCaller:
 
         input_script = "\n".join(input_script)
 
-        with open("input", mode="w") as file:
+        with open("input", mode="w", encoding="utf-8") as file:
             file.write(input_script)
 
     def _create_ucf(self):
@@ -363,7 +363,7 @@ class VampireCaller:
         ucf = "\n".join(ucf)
         ucf_file_name = f"{mat_name}.ucf"
 
-        with open(ucf_file_name, mode="w") as file:
+        with open(ucf_file_name, mode="w", encoding="utf-8") as file:
             file.write(ucf)
 
     @staticmethod
@@ -378,7 +378,16 @@ class VampireCaller:
             parsed_out (DataFrame): MSONable vampire output.
             critical_temp (float): Calculated critical temp.
         """
-        names = ["T", "m_total", *[f"m_{idx + 1}" for idx in range(n_mats)], "X_x", "X_y", "X_z", "X_m", "nan"]
+        names = [
+            "T",
+            "m_total",
+            *[f"m_{idx + 1}" for idx in range(n_mats)],
+            "X_x",
+            "X_y",
+            "X_z",
+            "X_m",
+            "nan",
+        ]
 
         # Parsing vampire MC output
         df_stdout = pd.read_csv(vamp_stdout, sep="\t", skiprows=9, header=None, names=names).drop("nan", axis=1)

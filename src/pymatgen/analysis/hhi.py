@@ -37,7 +37,7 @@ class HHIModel:
         """Init for HHIModel."""
         self.symbol_hhip_hhir = {}  # symbol->(HHI_production, HHI reserve)
 
-        with open(HHI_CSV_PATH) as file:
+        with open(HHI_CSV_PATH, encoding="utf-8") as file:
             for line in file:
                 if line[0] != "#":
                     symbol, hhi_production, hhi_reserve = line.split(",")
@@ -48,7 +48,10 @@ class HHIModel:
         if isinstance(el_or_symbol, Element):
             el_or_symbol = el_or_symbol.symbol
 
-        return self.symbol_hhip_hhir[el_or_symbol][0], self.symbol_hhip_hhir[el_or_symbol][1]
+        return (
+            self.symbol_hhip_hhir[el_or_symbol][0],
+            self.symbol_hhip_hhir[el_or_symbol][1],
+        )
 
     def get_hhi(self, comp_or_form):
         """Get the reserve and production HHI for a compound.
