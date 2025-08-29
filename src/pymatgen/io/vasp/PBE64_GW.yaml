@@ -1,0 +1,101 @@
+# POTCARs for PBE_64_GW
+PARENT: VASPIncarBase
+POTCAR_FUNCTIONAL: PBE_64
+POTCAR:
+  Ac: Ac
+  Ag: Ag_sv_GW
+  Al: Al_sv_GW
+  Am: Am # note not recomended (Al_GW)
+  Ar: Ar_GW
+  As: As_sv_GW # As_sv_GW not recomended (As_GW)
+  At: At_d_GW
+  Au: Au_sv_GW
+  B: B_GW_new
+  Ba: Ba_sv_GW
+  Be: Be_sv_GW
+  Bi: Bi_d_GW
+  Br: Br_sv_GW
+  C: C_GW_new
+  Ca: Ca_sv_GW
+  Cd: Cd_sv_GW
+  Ce: Ce_GW
+  Cf: Cf # same as PBE_64
+  Cl: Cl_GW
+  Cm: Cm
+  Co: Co_sv_GW
+  Cr: Cr_sv_GW
+  Cs: Cs_sv_GW
+  Cu: Cu_sv_GW
+  Dy: Dy_h # same as PBE_64
+  Er: Er_h # same as PBE_64
+  Eu: Eu_h
+  F: F_GW_new
+  Fe: Fe_sv_GW 
+  Fr: Fr_sv
+  Ga: Ga_sv_GW
+  Gd: Gd_h
+  Ge: Ge_sv_GW
+  H: H_GW_new
+  He: He_GW
+  Hf: Hf_sv_GW
+  Hg: Hg_sv_GW
+  Ho: Ho_h
+  I: I_sv_GW
+  In: In_d
+  Ir: Ir_sv_GW
+  K: K_sv_GW
+  Kr: Kr_GW
+  La: La_GW
+  Li: Li_sv_GW
+  Lu: Lu_sv
+  Mg: Mg_sv_GW
+  Mn: Mn_sv_GW
+  Mo: Mo_sv_GW
+  N: N_GW
+  Na: Na_sv_GW
+  Nb: Nb_sv_GW
+  Nd: Nd_h
+  Ne: Ne_s_GW
+  Ni: Ni_sv_GW
+  Np: Np
+  O: O_GW_new
+  Os: Os_sv_GW
+  P: P_GW
+  Pa: Pa
+  Pb: Pb_sv_GW
+  Pd: Pd_sv_GW
+  Pm: Pm_h
+  Po: Po_sv_GW
+  Pr: Pr_h
+  Pt: Pt_sv_GW
+  Pu: Pu
+  Ra: Ra_sv
+  Rb: Rb_sv_GW
+  Re: Re_sv_GW
+  Rh: Rh_sv_GW
+  Rn: Rn_sv_GW
+  Ru: Ru_sv_GW
+  S: S_GW
+  Sb: Sb_sv_GW
+  Sc: Sc_sv_GW
+  Se: Se_sv_GW
+  Si: Si_sv_GW
+  Sm: Sm_h
+  Sn: Sn_sv_GW
+  Sr: Sr_sv_GW
+  Ta: Ta_sv_GW
+  Tb: Tb_h
+  Tc: Tc_sv_GW
+  Te: Te_sv_GW
+  Th: Th
+  Ti: Ti_sv_GW
+  Tl: Tl_sv_GW
+  Tm: Tm_h
+  U: U
+  V: V_sv_GW
+  W: W_sv_GW
+  Xe: Xe_GW
+  Y: Y_sv_GW
+  Yb: Yb_h
+  Zn: Zn_sv_GW
+  Zr: Zr_sv_GW
